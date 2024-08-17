@@ -1,0 +1,21 @@
+services:
+  postgres_db:
+    image: postgres:16
+    container_name: place_pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: place-clone
+      POSTGRES_PASSWORD: secured_password
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis
+    restart: always
+    environment:
+      REDIS_PASSWORD: redis_secured_password
+      REDIS_PORT: 6379
+      REDIS_DATABASES: 1
+    ports:
+      - "6379:6379"
