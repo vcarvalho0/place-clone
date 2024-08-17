@@ -1,10 +1,24 @@
 package main
 
 import (
-	server "place-service/src"
+	"log"
+	"os"
+	"place-service/server"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	s := &server.Server{}
-	s.Start("localhost:8080")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	addr, ok := os.LookupEnv("SERVER_ADDRESS")
+	if !ok {
+		log.Fatal("Missing server address in env file")
+	}
+
+	s := server.Server{}
+	s.Start(addr)
 }
