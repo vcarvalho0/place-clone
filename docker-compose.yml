@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_DB: place-clone
+      POSTGRES_DB: place_clone
       POSTGRES_PASSWORD: secured_password
     ports:
       - "5432:5432"
