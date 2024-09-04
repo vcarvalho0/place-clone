@@ -1,4 +1,4 @@
-import { useRef, useState, MouseEvent, WheelEvent } from "react"
+import { useRef, useState, MouseEvent, WheelEvent, useEffect } from "react"
 import { SelectTool } from "@/components/Selector/style"
 import { calculateDistance, Position } from "@/utils/math"
 import { usePallete } from "@/context/palette"
@@ -10,16 +10,22 @@ import * as S from "./style"
 const PIXEL = 5
 const THRESHOLD = 5
 
+type PixelData = {
+  x: number
+  y: number
+  color: string
+}
+
 export default function Place() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const { color } = usePallete()
+  const [socket, setSocket] = useState<WebSocket | null>(null)
   const [lastMousePos, setLastMousePos] = useState<Position | null>(null)
-  const [isRightMouseDown, setIsRightMouseDown] = useState(false)
   const [coordinates, setCoordinates] = useState({ x: 0, y: 0 })
-  const [scale, setScale] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [scale, setScale] = useState(1)
   const [isPanning, setIsPanning] = useState(false)
   const [openPallete, setOpenPallete] = useState(false)
+  const { color } = usePallete()
 
   const scaleOffsetCoords = (e: MouseEvent) => {
     const rect = canvasRef.current?.getBoundingClientRect()
@@ -42,12 +48,11 @@ export default function Place() {
     const position = scaleOffsetCoords(e)
     if (position && e.button === 0) {
       setLastMousePos(position)
-      setIsRightMouseDown(true)
     }
   }
 
   const onMouseMovePan = (e: MouseEvent) => {
-    if (!isRightMouseDown || !lastMousePos) return
+    if (!lastMousePos) return
 
     const position = scaleOffsetCoords(e)
     if (!position) return
@@ -65,7 +70,7 @@ export default function Place() {
   }
 
   const onMouseUpPan = (e: MouseEvent) => {
-    if (!isRightMouseDown || !lastMousePos) return
+    if (!lastMousePos) return
 
     const position = scaleOffsetCoords(e)
     if (!position) return
@@ -81,25 +86,57 @@ export default function Place() {
     }
 
     setIsPanning(false)
-    setIsRightMouseDown(false)
     setLastMousePos(null)
+  }
+
+  const drawPixel = (ctx: CanvasRenderingContext2D, pixel: PixelData) => {
+    const [r, g, b] = pixel.color.split(" ").map(Number)
+
+    const data = ctx.createImageData(5, 5)
+
+    for (let i = 0; i < data.data.length; i += 4) {
+      data.data[i] = r
+      data.data[i + 1] = g
+      data.data[i + 2] = b
+      data.data[i + 3] = 255
+    }
+
+    ctx.putImageData(data, pixel.x, pixel.y)
   }
 
   const handlePixelPlace = () => {
     const ctx = canvasRef.current?.getContext("2d")
-    if (ctx) {
-      const pixel = ctx.createImageData(5, 5)
+    if (!ctx) return
 
-      for (let i = 0; i < pixel.data.length; i += 4) {
-        pixel.data[i] = color.r
-        pixel.data[i + 1] = color.g
-        pixel.data[i + 2] = color.b
-        pixel.data[i + 3] = 255
-      }
+    const pixelData = {
+      x: coordinates.x,
+      y: coordinates.y,
+      color: `${color.r} ${color.g} ${color.b}`
+    }
 
-      ctx.putImageData(pixel, coordinates.x, coordinates.y)
+    drawPixel(ctx, pixelData)
+
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify(pixelData))
     }
   }
+
+  useEffect(() => {
+    const socket = new WebSocket("ws://localhost:8080/ws")
+    setSocket(socket)
+
+    socket.onmessage = (event) => {
+      const pixel = JSON.parse(event.data)
+      const ctx = canvasRef.current?.getContext("2d")
+      if (ctx) drawPixel(ctx, pixel)
+    }
+
+    return () => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.close()
+      }
+    }
+  }, [])
 
   return (
     <S.Container>
