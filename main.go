@@ -15,10 +15,8 @@ func main() {
 	}
 
 	addr, ok := os.LookupEnv("SERVER_ADDRESS")
+	server.StartServer(addr)
 	if !ok {
 		log.Fatal("Missing server address in env file")
 	}
-
-	s := server.Server{}
-	s.Start(addr)
 }
