@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	redis "place-service/config"
 
 	"github.com/gorilla/websocket"
 )
@@ -12,12 +13,6 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin:     func(r *http.Request) bool { return true },
-}
-
-type Pixel struct {
-	PosX  uint   `json:"x"`
-	PosY  uint   `json:"y"`
-	Color string `json:"color"`
 }
 
 type Client struct {
@@ -53,17 +48,21 @@ func (s *PixelBroadcast) serverWs(w http.ResponseWriter, r *http.Request) {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
-				log.Printf("Unexpected WebSocket error: %v: ", err)
-			} else {
-				log.Printf("WebSocket connection closed: %v: ", err)
+				log.Fatal("Unexpected WebSocket error: ", err)
 			}
 			break
 		}
 
-		var pixel Pixel
+		var pixel redis.Pixel
 		err = json.Unmarshal(message, &pixel)
 		if err != nil {
-			log.Fatal("JSON pixel parsing error: ", err)
+			log.Printf("JSON pixel parsing error: %s", err)
+			continue
+		}
+
+		err = redis.SavePixel(pixel)
+		if err != nil {
+			log.Printf("Error while trying to save the pixels in database: %s", err)
 			continue
 		}
 
@@ -84,14 +83,29 @@ func (s *PixelBroadcast) broadcastPixel(message []byte, sender *Client) {
 	}
 }
 
+func retrieveBoardState(w http.ResponseWriter, r *http.Request) {
+	pixels, err := redis.GetAllPixels()
+	if err != nil {
+		http.Error(w, "Error while trying to retrieve the board state", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(pixels)
+}
+
 func StartServer(addr string) {
 	broadcastServer := BroadcastServer()
 
-	http.HandleFunc("/ws", broadcastServer.serverWs)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/ws", broadcastServer.serverWs)
+	mux.HandleFunc("/board", retrieveBoardState)
+
+	handler := CorsMiddleware(mux)
 
 	log.Printf("Server started on address %s", addr)
-	err := http.ListenAndServe(addr, nil)
+	err := http.ListenAndServe(addr, handler)
 	if err != nil {
-		log.Fatal("Something wrong happened: ", err)
+		log.Fatal("Something happened while trying to start the server: ", err)
 	}
 }

@@ -14,8 +14,8 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	addr, ok := os.LookupEnv("SERVER_ADDRESS")
-	server.StartServer(addr)
+	port, ok := os.LookupEnv("PORT")
+	server.StartServer(port)
 	if !ok {
 		log.Fatal("Missing server address in env file")
 	}
