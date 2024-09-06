@@ -4,28 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/redis/go-redis/v9"
 )
 
 func ConnectRedis() *redis.Client {
-	redisAddr, ok := os.LookupEnv("REDIS")
-	if !ok {
-		log.Fatalf("Missing REDIS environment variable")
-	}
-	redisPassword, ok := os.LookupEnv("REDIS_PASSWORD")
-	if !ok {
-		log.Fatalf("Missing REDIS_PASSWORD environment variable")
+	opt, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+	if err != nil {
+		panic(err)
 	}
 
-	client := redis.NewClient(&redis.Options{
-		Addr:     redisAddr,
-		Password: redisPassword,
-		DB:       0,
-	})
-
+	client := redis.NewClient(opt)
 	return client
 }
 
