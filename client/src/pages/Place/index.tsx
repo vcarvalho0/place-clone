@@ -5,8 +5,8 @@ import { usePallete } from "@/context/palette"
 import Menu from "@/components/Menu"
 import Info from "@/components/Info"
 import Pallete from "@/components/Pallete"
-import * as S from "./style"
 import Loading from "@/components/Loading"
+import * as S from "./style"
 
 const PIXEL = 5
 const THRESHOLD = 5
@@ -149,10 +149,12 @@ export default function Place() {
     setIsLoading(true)
     fetch(import.meta.env.VITE_REDIS)
       .then((response) => response.json())
-      .then((pixels: PixelData[]) => {
-        if (Array.isArray(pixels) && pixels.length > 0) {
-          pixels.forEach((pixel) => drawPixel(ctx, pixel))
-        }
+      .then((pixels) => {
+        pixels.forEach((pixel: PixelData) => {
+          if (pixels.length > 0) {
+            drawPixel(ctx, pixel)
+          }
+        })
       })
       .catch((error) => console.log("Error fetching data: ", error))
       .finally(() => setIsLoading(false))
@@ -170,18 +172,28 @@ export default function Place() {
         }}
         onWheel={onWheelZoomCanvas}
       >
-        {!isLoading && (
-          <S.Canvas
-            ref={canvasRef}
-            width={1000}
-            height={1000}
-            onMouseDown={onMouseDownPan}
-            onMouseMove={onMouseMovePan}
-            onMouseUp={onMouseUpPan}
-          />
+        {/* Canvas should remain rendered at all times to prevent the loss of pixels when drawPixel() is called. */}
+        <S.Canvas
+          ref={canvasRef}
+          width={1000}
+          height={1000}
+          onMouseDown={onMouseDownPan}
+          onMouseMove={onMouseMovePan}
+          onMouseUp={onMouseUpPan}
+          style={{
+            visibility: isLoading ? "hidden" : "visible",
+            opacity: isLoading ? 0 : 1,
+            transition: "opacity 0.3s ease"
+          }}
+        />
+
+        {isLoading && (
+          <S.LoadingWrapper>
+            <Loading />
+          </S.LoadingWrapper>
         )}
 
-        {!Loading && (
+        {!isLoading && (
           <SelectTool
             pixelSize={PIXEL}
             style={{
@@ -210,8 +222,6 @@ export default function Place() {
           />
         )}
       </S.PalleteContainer>
-
-      {isLoading && <Loading />}
     </S.Container>
   )
 }

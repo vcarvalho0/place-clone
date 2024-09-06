@@ -36,6 +36,18 @@ export const PalleteContainer = styled.div`
 
 export const Wrapper = styled.div``
 
+export const LoadingWrapper = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`
+
 export const Canvas = styled.canvas`
   background-color: white;
 `
