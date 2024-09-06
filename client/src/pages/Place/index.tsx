@@ -122,13 +122,16 @@ export default function Place() {
   }
 
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:8080/ws")
+    const socket = new WebSocket(import.meta.env.VITE_WEBSOCKET_SERVICE)
     setSocket(socket)
 
     socket.onmessage = (event) => {
       const pixel = JSON.parse(event.data)
       const ctx = canvasRef.current?.getContext("2d")
-      if (ctx) drawPixel(ctx, pixel)
+
+      if (ctx) {
+        drawPixel(ctx, pixel)
+      }
     }
 
     return () => {
@@ -136,6 +139,23 @@ export default function Place() {
         socket.close()
       }
     }
+  }, [])
+
+  useEffect(() => {
+    const ctx = canvasRef.current?.getContext("2d")
+    fetch(import.meta.env.VITE_REDIS)
+      .then((response) => response.json())
+      .then((pixels) => {
+        pixels.forEach((pixel: PixelData) => {
+          if (!Array.isArray(pixels) || pixels.length === 0) {
+            return
+          }
+
+          if (ctx) {
+            drawPixel(ctx, pixel)
+          }
+        })
+      })
   }, [])
 
   return (

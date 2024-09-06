@@ -1,4 +1,4 @@
-import styled, { css } from "styled-components"
+import styled, { css, keyframes } from "styled-components"
 import { DefaultTheme } from "styled-components/dist/types"
 import { ButtonProps } from "."
 
@@ -35,6 +35,12 @@ export const wrapperModifiers = {
   `
 }
 
+const expand = keyframes`
+  0%  { transform: scale(1, 1)   }
+  50% { transform: scale(1.3, 1.3) }
+  100% { transform: scale(1, 1)   }
+`
+
 export const Wrapper = styled.button<WrapperProps>`
   ${({ theme, size, bold, disabled, fullWidth, backgroundColor }) => css`
     cursor: pointer;
@@ -47,6 +53,10 @@ export const Wrapper = styled.button<WrapperProps>`
 
     &:hover {
       transform: scale(1.1, 1.1);
+    }
+
+    &:focus {
+      animation: ${expand} 0.2s linear normal;
     }
 
     ${!!size && wrapperModifiers[size](theme)}
