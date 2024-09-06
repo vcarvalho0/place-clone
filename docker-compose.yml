@@ -3,7 +3,7 @@ services:
     image: redis
     restart: always
     environment:
-      REDIS_PASSWORD: redis_secured_password
+      REDIS_PASSWORD: redis_pass
       REDIS_PORT: 6379
       REDIS_DATABASES: 1
     ports:
