@@ -6,6 +6,7 @@ import Menu from "@/components/Menu"
 import Info from "@/components/Info"
 import Pallete from "@/components/Pallete"
 import * as S from "./style"
+import Loading from "@/components/Loading"
 
 const PIXEL = 5
 const THRESHOLD = 5
@@ -25,6 +26,7 @@ export default function Place() {
   const [scale, setScale] = useState(1)
   const [isPanning, setIsPanning] = useState(false)
   const [openPallete, setOpenPallete] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const { color } = usePallete()
 
   const scaleOffsetCoords = (e: MouseEvent) => {
@@ -122,16 +124,15 @@ export default function Place() {
   }
 
   useEffect(() => {
+    const ctx = canvasRef.current?.getContext("2d")
+    if (!ctx) return
+
     const socket = new WebSocket(import.meta.env.VITE_WEBSOCKET_SERVICE)
     setSocket(socket)
 
     socket.onmessage = (event) => {
       const pixel = JSON.parse(event.data)
-      const ctx = canvasRef.current?.getContext("2d")
-
-      if (ctx) {
-        drawPixel(ctx, pixel)
-      }
+      drawPixel(ctx, pixel)
     }
 
     return () => {
@@ -143,19 +144,18 @@ export default function Place() {
 
   useEffect(() => {
     const ctx = canvasRef.current?.getContext("2d")
+    if (!ctx) return
+
+    setIsLoading(true)
     fetch(import.meta.env.VITE_REDIS)
       .then((response) => response.json())
-      .then((pixels) => {
-        pixels.forEach((pixel: PixelData) => {
-          if (!Array.isArray(pixels) || pixels.length === 0) {
-            return
-          }
-
-          if (ctx) {
-            drawPixel(ctx, pixel)
-          }
-        })
+      .then((pixels: PixelData[]) => {
+        if (Array.isArray(pixels) && pixels.length > 0) {
+          pixels.forEach((pixel) => drawPixel(ctx, pixel))
+        }
       })
+      .catch((error) => console.log("Error fetching data: ", error))
+      .finally(() => setIsLoading(false))
   }, [])
 
   return (
@@ -170,20 +170,25 @@ export default function Place() {
         }}
         onWheel={onWheelZoomCanvas}
       >
-        <S.Canvas
-          ref={canvasRef}
-          width={1000}
-          height={1000}
-          onMouseDown={onMouseDownPan}
-          onMouseMove={onMouseMovePan}
-          onMouseUp={onMouseUpPan}
-        />
-        <SelectTool
-          pixelSize={PIXEL}
-          style={{
-            transform: `translate(${coordinates.x}px, ${coordinates.y}px)`
-          }}
-        />
+        {!isLoading && (
+          <S.Canvas
+            ref={canvasRef}
+            width={1000}
+            height={1000}
+            onMouseDown={onMouseDownPan}
+            onMouseMove={onMouseMovePan}
+            onMouseUp={onMouseUpPan}
+          />
+        )}
+
+        {!Loading && (
+          <SelectTool
+            pixelSize={PIXEL}
+            style={{
+              transform: `translate(${coordinates.x}px, ${coordinates.y}px)`
+            }}
+          />
+        )}
       </S.Wrapper>
 
       <S.BottomContainer>
@@ -205,6 +210,8 @@ export default function Place() {
           />
         )}
       </S.PalleteContainer>
+
+      {isLoading && <Loading />}
     </S.Container>
   )
 }
