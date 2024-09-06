@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	redis "place-service/config"
 
 	"github.com/gorilla/websocket"
@@ -104,7 +105,20 @@ func StartServer(addr string) {
 	handler := CorsMiddleware(mux)
 
 	log.Printf("Server started on address %s", addr)
-	err := http.ListenAndServe(addr, handler)
+
+	if os.Getenv("ENV") != "production" {
+		err := http.ListenAndServe(addr, handler)
+		if err != nil {
+			log.Fatal("Something happened while trying to start the server: ", err)
+		}
+	} else {
+		err := http.ListenAndServeTLS(addr, "server.crt", "server.key", handler)
+		if err != nil {
+			log.Fatal("Something happened while trying to start the server: ", err)
+		}
+	}
+
+	err := http.ListenAndServeTLS(addr, "server.crt", "server.key", handler)
 	if err != nil {
 		log.Fatal("Something happened while trying to start the server: ", err)
 	}
