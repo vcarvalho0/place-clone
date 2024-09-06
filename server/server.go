@@ -117,9 +117,4 @@ func StartServer(addr string) {
 			log.Fatal("Something happened while trying to start the server: ", err)
 		}
 	}
-
-	err := http.ListenAndServeTLS(addr, "server.crt", "server.key", handler)
-	if err != nil {
-		log.Fatal("Something happened while trying to start the server: ", err)
-	}
 }
