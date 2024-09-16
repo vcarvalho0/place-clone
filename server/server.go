@@ -1,110 +1,35 @@
 package server
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
-	redis "place-service/config"
-
-	"github.com/gorilla/websocket"
+	"place-service/internal/websocket"
+	"place-service/redis"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin:     func(r *http.Request) bool { return true },
-}
+func addRoutes(mux *http.ServeMux, rdb *redis.Redis) {
+	server := websocket.NewServer(rdb)
 
-type Client struct {
-	conn *websocket.Conn
-}
-
-type PixelBroadcast struct {
-	clients map[*Client]bool
-}
-
-func BroadcastServer() *PixelBroadcast {
-	return &PixelBroadcast{
-		clients: make(map[*Client]bool),
-	}
-}
-
-func (s *PixelBroadcast) serverWs(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	client := &Client{conn: conn}
-	s.clients[client] = true
-
-	defer func() {
-		delete(s.clients, client)
-		conn.Close()
-	}()
-
-	for {
-		_, message, err := conn.ReadMessage()
-		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
-				log.Fatal("Unexpected WebSocket error: ", err)
-			}
-			break
-		}
-
-		var pixel redis.Pixel
-		err = json.Unmarshal(message, &pixel)
-		if err != nil {
-			log.Printf("JSON pixel parsing error: %s", err)
-			continue
-		}
-
-		err = redis.SavePixel(pixel)
-		if err != nil {
-			log.Printf("Error while trying to save the pixels in database: %s", err)
-			continue
-		}
-
-		s.broadcastPixel(message, client)
-	}
-}
-
-func (s *PixelBroadcast) broadcastPixel(message []byte, sender *Client) {
-	for client := range s.clients {
-		if client != sender {
-			err := client.conn.WriteMessage(websocket.TextMessage, message)
-			if err != nil {
-				log.Fatal("Error while trying to broadcast the pixels to client: ", err)
-				client.conn.Close()
-				delete(s.clients, client)
-			}
-		}
-	}
-}
-
-func retrieveBoardState(w http.ResponseWriter, r *http.Request) {
-	pixels, err := redis.GetAllPixels()
-	if err != nil {
-		http.Error(w, "Error while trying to retrieve the board state", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(pixels)
+	mux.HandleFunc("/api/v1/draw", server.HandlerWS)
+	mux.Handle("/api/v1/bitmap", Cors(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		RetrieveBitmap(w, r, rdb)
+	})))
 }
 
 func StartServer(addr string) {
-	broadcastServer := BroadcastServer()
+	redis, err := redis.Connect()
+	if err != nil {
+		log.Fatal("Error trying to connect to redis server")
+	}
+
+	// Check if board exist, if not create a new one
+	redis.DoesBoardExist()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/ws", broadcastServer.serverWs)
-	mux.HandleFunc("/board", retrieveBoardState)
-
-	handler := CorsMiddleware(mux)
+	addRoutes(mux, redis)
 
 	log.Printf("Server started on address %s", addr)
-	err := http.ListenAndServe(addr, handler)
+	err = http.ListenAndServe(addr, mux)
 	if err != nil {
 		log.Fatal("Something happened while trying to start the server: ", err)
 	}

@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func CorsMiddleware(next http.Handler) http.Handler {
+func Cors(next http.Handler) http.Handler {
 	access_control_origin, ok := os.LookupEnv("ACCESS_CONTROL_ORIGIN")
 	if !ok {
 		log.Fatal("Missing ACCESS_CONTROL_ORIGIN environment variable")
