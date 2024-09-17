@@ -24,8 +24,6 @@ func (r *Redis) SetTileInBoard(x, y int, color uint8) error {
 		log.Printf("Error while trying to set the tile in board %s", err)
 	}
 
-	log.Printf("Updated tile at (x=%d, y=%d) offset", x, y)
-
 	return err
 }
 
@@ -61,6 +59,9 @@ func (r *Redis) initializeBoard() error {
 	bytesNeeded := CANVAS_WIDTH * CANVAS_HEIGHT
 
 	board := make([]byte, bytesNeeded)
+	for i := range board {
+		board[i] = 0xFF
+	}
 
 	_, err := r.Set(ctx, "place:board_bitmap", board, 0).Result()
 	if err != nil {
