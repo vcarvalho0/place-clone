@@ -1,15 +1,9 @@
 import { createContext, ReactNode, useContext, useState } from "react"
-import { Color } from "@/utils/pallete"
-
-export type PixelRGB = {
-  r: number
-  g: number
-  b: number
-}
+import { pallete } from "@/utils/pallete"
 
 type PalleteContextType = {
-  color: PixelRGB
-  getColor: (pallete: Color) => void
+  index: number
+  getIndexFromHex: (hex: string) => void
 }
 
 type PalleteProviderProps = {
@@ -19,22 +13,15 @@ type PalleteProviderProps = {
 const PalleteContext = createContext<PalleteContextType | null>(null)
 
 export const PalleteProvider = ({ children }: PalleteProviderProps) => {
-  const [color, setColor] = useState<PixelRGB>({ r: 0, g: 0, b: 0 })
+  const [index, setIndex] = useState<number>(14)
 
-  const hexToRgb = (hex: string) => {
-    const r = parseInt(hex.slice(1, 3), 16)
-    const g = parseInt(hex.slice(3, 5), 16)
-    const b = parseInt(hex.slice(5, 7), 16)
-    return { r, g, b }
-  }
-
-  const getColor = (pallete: Color) => {
-    const rgb = hexToRgb(pallete.hex)
-    setColor(rgb)
+  const getIndexFromHex = (hex: string) => {
+    const colorIndex = pallete.findIndex((color) => color.hex === hex)
+    setIndex(colorIndex)
   }
 
   return (
-    <PalleteContext.Provider value={{ color, getColor }}>
+    <PalleteContext.Provider value={{ index, getIndexFromHex }}>
       {children}
     </PalleteContext.Provider>
   )
