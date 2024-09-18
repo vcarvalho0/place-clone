@@ -1,12 +1,13 @@
-import { PixelRGB } from "@/context/palette"
 import Button from "../Button"
 import * as S from "./style"
+import { MouseEvent } from "react"
+import { pallete } from "@/utils/pallete"
 
 type MenuProps = {
-  handlePlacePixel: (e: React.MouseEvent<HTMLButtonElement>) => void
-  handleOpenPallete: () => void
-  scaleLevel: number
-  currentColor: PixelRGB
+  handleDrawTile: (e: MouseEvent<HTMLButtonElement>) => void
+  handlePallete: () => void
+  colorIndex: number
+  scale: number
 }
 
 function ElipsisHorizontal() {
@@ -27,35 +28,27 @@ function ElipsisHorizontal() {
 }
 
 export default function Menu({
-  handlePlacePixel,
-  handleOpenPallete,
-  scaleLevel,
-  currentColor
+  handleDrawTile,
+  handlePallete,
+  colorIndex,
+  scale
 }: MenuProps) {
-  const checkColor = () => {
-    const color = currentColor
-    if (color.r === 0 && color.g === 0 && color.b === 0) {
-      return "rgb(255, 255, 255)"
-    }
-    return `rgb(${color.r}, ${color.g}, ${color.b})`
+  const getCurrentColor = (): string => {
+    return pallete[colorIndex].hex || ""
   }
 
   return (
     <S.Container>
-      <Button
-        size="medium"
-        onClick={handlePlacePixel}
-        backgroundColor="#FE4503"
-      >
+      <Button size="medium" onClick={handleDrawTile} backgroundColor="#FE4503">
         <S.Wrapper>
           <p>Place!</p>
-          <S.Text>{scaleLevel.toString().concat("x")}</S.Text>
+          <S.Text>{scale.toString().concat("x")}</S.Text>
         </S.Wrapper>
       </Button>
       <Button
         size="small"
-        onClick={handleOpenPallete}
-        backgroundColor={checkColor()}
+        onClick={handlePallete}
+        backgroundColor={getCurrentColor()}
       >
         <ElipsisHorizontal />
       </Button>

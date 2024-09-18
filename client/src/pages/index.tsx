@@ -73,7 +73,7 @@ export default function Place() {
     if (socket) {
       socket.onmessage = (event) => {
         const { x, y, color } = JSON.parse(event.data)
-        drawTile(x, y, color)
+        drawTile(x, y, pallete[color].hex)
       }
     }
   }, [drawTile, socket])

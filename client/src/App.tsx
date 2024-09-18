@@ -1,6 +1,6 @@
 import React from "react"
 import isPropValid from "@emotion/is-prop-valid"
-import Place from "./pages/Place"
+import Place from "./pages"
 import theme from "./style/theme"
 import { StyleSheetManager } from "styled-components"
 import { GlobalStyle } from "./style"

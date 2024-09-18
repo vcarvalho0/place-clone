@@ -15,22 +15,10 @@ const collapseIn = keyframes`
   from {
     transform: translateY(100%);
     opacity: 0;
-  } 
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
   }
-`
-
-const collapseOut = keyframes`
-  from {
-    transform: translateY(0);
-    opacity: 0;
-  } 
 
   to {
-    transform: translateY(100%);
+    transform: translateY(0);
     opacity: 1;
   }
 `
@@ -39,6 +27,8 @@ export const Colors = styled.div<ColorProps>`
   width: 2.2rem;
   height: 2.2rem;
   cursor: pointer;
+  margin: 2.4px;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   background-color: ${(props) => props.color};
 
   &:hover {
@@ -67,8 +57,8 @@ export const PalleteBar = styled.div<{ isCollapsing: boolean }>`
   background-color: #ffffff;
   height: 100%;
   border: 2px solid black;
-  animation: ${(props) => (props.isCollapsing ? collapseIn : collapseOut)} 0.2s
-    linear normal;
+  animation: ${(props) => (props.isCollapsing ? collapseIn : "")} 0.2s linear
+    normal;
   z-index: 1;
 `
 

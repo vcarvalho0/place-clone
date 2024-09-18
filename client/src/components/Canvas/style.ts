@@ -37,7 +37,7 @@ export const Canvas = styled.canvas<CanvasLoadingProps>`
   outline: none;
   visibility: ${(props) => (props.isLoading ? "hidden" : "visible")};
   opacity: ${(props) => (props.isLoading ? 0 : 1)};
-  transition: opacity 0.3s ease;
+  transition: opacity 0.6s ease-in-out;
 `
 
 export const LoadingWrapper = styled.div`

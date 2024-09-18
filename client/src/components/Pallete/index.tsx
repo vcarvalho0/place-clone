@@ -5,16 +5,16 @@ import Tooltip from "../Tooltip"
 import * as S from "./style"
 
 type PalleteProps = {
-  closePallete: () => void
-  openPallete: boolean
+  close: () => void
+  open: boolean
 }
 
-export default function Pallete({ openPallete, closePallete }: PalleteProps) {
+export default function Pallete({ open, close }: PalleteProps) {
   const [colorType, setColorType] = useState("")
-  const { getColor } = usePallete()
+  const { getIndexFromHex } = usePallete()
 
   return (
-    <S.PalleteBar isCollapsing={openPallete}>
+    <S.PalleteBar isCollapsing={open}>
       <S.ColorWrapper>
         {pallete.map((color, index) => {
           return (
@@ -23,7 +23,7 @@ export default function Pallete({ openPallete, closePallete }: PalleteProps) {
                 color={color.hex}
                 onClick={() => {
                   setColorType(color.name)
-                  getColor(color)
+                  getIndexFromHex(color.hex)
                 }}
                 colorSelected={colorType === color.name}
               />
@@ -31,7 +31,7 @@ export default function Pallete({ openPallete, closePallete }: PalleteProps) {
           )
         })}
       </S.ColorWrapper>
-      <S.PalleteButton onClick={closePallete}>X</S.PalleteButton>
+      <S.PalleteButton onClick={close}>X</S.PalleteButton>
     </S.PalleteBar>
   )
 }
