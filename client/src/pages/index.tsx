@@ -17,7 +17,7 @@ export default function Place() {
   const { index } = usePallete()
 
   const { sendJsonMessage, isConnected, socket } = useWebSocket({
-    url: `${import.meta.env.BASE_URL}/api/v1/draw`
+    url: `${import.meta.env.VITE_API_BASE_URL}/api/v1/draw`
   })
 
   const sendTilePlacement = () => {
