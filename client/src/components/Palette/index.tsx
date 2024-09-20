@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { pallete } from "@/utils/pallete"
-import { usePallete } from "@/context/palette"
+import { palette } from "@/utils/palette"
+import { usePalette } from "@/context/palette"
 import Tooltip from "../Tooltip"
 import * as S from "./style"
 
@@ -11,12 +11,12 @@ type PalleteProps = {
 
 export default function Pallete({ open, close }: PalleteProps) {
   const [colorType, setColorType] = useState("")
-  const { getIndexFromHex } = usePallete()
+  const { getIndexFromHex } = usePalette()
 
   return (
     <S.PalleteBar isCollapsing={open}>
       <S.ColorWrapper>
-        {pallete.map((color, index) => {
+        {palette.map((color, index) => {
           return (
             <Tooltip key={index} content={color.name}>
               <S.Colors

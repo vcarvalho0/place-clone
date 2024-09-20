@@ -4,7 +4,7 @@ import Place from "./pages"
 import theme from "./style/theme"
 import { StyleSheetManager } from "styled-components"
 import { GlobalStyle } from "./style"
-import { PalleteProvider } from "./context/palette"
+import { PaletteProvider } from "./context/palette"
 import { ThemeProvider } from "styled-components"
 
 function App() {
@@ -12,9 +12,9 @@ function App() {
     <StyleSheetManager shouldForwardProp={shouldForwardProp}>
       <GlobalStyle />
       <ThemeProvider theme={theme}>
-        <PalleteProvider>
+        <PaletteProvider>
           <Place />
-        </PalleteProvider>
+        </PaletteProvider>
       </ThemeProvider>
     </StyleSheetManager>
   )

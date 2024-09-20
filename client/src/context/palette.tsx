@@ -1,34 +1,34 @@
 import { createContext, ReactNode, useContext, useState } from "react"
-import { pallete } from "@/utils/pallete"
+import { palette } from "@/utils/palette"
 
-type PalleteContextType = {
+type PaletteContextType = {
   index: number
   getIndexFromHex: (hex: string) => void
 }
 
-type PalleteProviderProps = {
+type PaletteProviderProps = {
   children: ReactNode | ReactNode[]
 }
 
-const PalleteContext = createContext<PalleteContextType | null>(null)
+const PaletteContext = createContext<PaletteContextType | null>(null)
 
-export const PalleteProvider = ({ children }: PalleteProviderProps) => {
-  const [index, setIndex] = useState<number>(14)
+export const PaletteProvider = ({ children }: PaletteProviderProps) => {
+  const [index, setIndex] = useState<number>(29)
 
   const getIndexFromHex = (hex: string) => {
-    const colorIndex = pallete.findIndex((color) => color.hex === hex)
+    const colorIndex = palette.findIndex((color) => color.hex === hex)
     setIndex(colorIndex)
   }
 
   return (
-    <PalleteContext.Provider value={{ index, getIndexFromHex }}>
+    <PaletteContext.Provider value={{ index, getIndexFromHex }}>
       {children}
-    </PalleteContext.Provider>
+    </PaletteContext.Provider>
   )
 }
 
-export const usePallete = () => {
-  const context = useContext(PalleteContext)
+export const usePalette = () => {
+  const context = useContext(PaletteContext)
 
   if (!context) {
     throw new Error("You're not using usePallete provider")

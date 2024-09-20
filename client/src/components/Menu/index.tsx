@@ -1,7 +1,7 @@
 import Button from "../Button"
 import * as S from "./style"
 import { MouseEvent } from "react"
-import { pallete } from "@/utils/pallete"
+import { palette } from "@/utils/palette"
 
 type MenuProps = {
   handleDrawTile: (e: MouseEvent<HTMLButtonElement>) => void
@@ -34,7 +34,7 @@ export default function Menu({
   scale
 }: MenuProps) {
   const getCurrentColor = (): string => {
-    return pallete[colorIndex].hex || ""
+    return palette[colorIndex].hex || ""
   }
 
   return (

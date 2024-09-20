@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react"
 import * as S from "./style"
-import { pallete } from "@/utils/pallete"
+import { palette } from "@/utils/palette"
 
 export default function Loading() {
   const [colorIndex, setColorIndex] = useState(0)
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      setColorIndex((prevIndex) => (prevIndex + 1) % pallete.length)
+      setColorIndex((prevIndex) => (prevIndex + 1) % palette.length)
     }, 1000)
 
     return () => clearInterval(intervalId)
@@ -15,7 +15,7 @@ export default function Loading() {
 
   return (
     <>
-      <S.Square backgroundColor={pallete[colorIndex].hex} />
+      <S.Square backgroundColor={palette[colorIndex].hex} />
       <S.Text>Loading...</S.Text>
     </>
   )

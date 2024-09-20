@@ -24,6 +24,7 @@ export const BottomContainer = styled.div`
 
 export const PalleteContainer = styled.div`
   position: fixed;
+  width: 100%;
   bottom: 0;
   z-index: 1;
 `

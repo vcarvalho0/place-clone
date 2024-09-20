@@ -27,7 +27,7 @@ export const Colors = styled.div<ColorProps>`
   width: 2.2rem;
   height: 2.2rem;
   cursor: pointer;
-  margin: 2.4px;
+  margin: 2.6px;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   background-color: ${(props) => props.color};
 
@@ -46,7 +46,21 @@ export const Colors = styled.div<ColorProps>`
 
 export const ColorWrapper = styled.div`
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
+  max-width: 35%;
+
+  @media (max-width: 1440px) {
+    max-width: 45%;
+  }
+
+  @media (max-width: 1024px) {
+    max-width: 65%;
+  }
+
+  @media (max-width: 768px) {
+    max-width: 75%;
+  }
 `
 
 export const PalleteBar = styled.div<{ isCollapsing: boolean }>`
@@ -55,7 +69,6 @@ export const PalleteBar = styled.div<{ isCollapsing: boolean }>`
   align-items: center;
   flex-direction: column;
   background-color: #ffffff;
-  height: 100%;
   border: 2px solid black;
   animation: ${(props) => (props.isCollapsing ? collapseIn : "")} 0.2s linear
     normal;

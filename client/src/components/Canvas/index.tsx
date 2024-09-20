@@ -9,10 +9,10 @@ import {
 import { calculateDistance, Position } from "@/utils/math"
 import Menu from "@/components/Menu"
 import Info from "@/components/Info"
-import Pallete from "@/components/Pallete"
+import Palette from "@/components/Palette"
 import * as S from "./style"
 import Loading from "../Loading"
-import { usePallete } from "@/context/palette"
+import { usePalette } from "@/context/palette"
 import Cursor from "../Cursor"
 
 type CanvasActions = {
@@ -44,14 +44,14 @@ export default function Canvas({
   const [scale, setScale] = useState(1)
   const [isPanning, setIsPanning] = useState(false)
   const [pallete, setPallete] = useState(false)
-  const { index } = usePallete()
+  const { index } = usePalette()
 
   // Keep canvas focus when pallete changes
   useEffect(() => {
     if (canvasRef.current) {
       canvasRef.current.focus()
     }
-  }, [canvasRef, pallete])
+  }, [canvasRef, index])
 
   const scaleOffsetCoords = (e: MouseEvent) => {
     const rect = canvasRef.current?.getBoundingClientRect()
@@ -174,20 +174,26 @@ export default function Canvas({
         </S.LoadingWrapper>
       )}
 
-      <S.BottomContainer>
-        {!pallete && (
-          <Menu
-            handleDrawTile={drawTile}
-            handlePallete={() => setPallete(true)}
-            scale={scale}
-            colorIndex={index}
-          />
-        )}
-      </S.BottomContainer>
+      {!isLoading && (
+        <>
+          <S.BottomContainer>
+            {!pallete && (
+              <Menu
+                handleDrawTile={drawTile}
+                handlePallete={() => setPallete(true)}
+                scale={scale}
+                colorIndex={index}
+              />
+            )}
+          </S.BottomContainer>
 
-      <S.PalleteContainer>
-        {pallete && <Pallete open={pallete} close={() => setPallete(false)} />}
-      </S.PalleteContainer>
+          <S.PalleteContainer>
+            {pallete && (
+              <Palette open={pallete} close={() => setPallete(false)} />
+            )}
+          </S.PalleteContainer>
+        </>
+      )}
     </>
   )
 }
