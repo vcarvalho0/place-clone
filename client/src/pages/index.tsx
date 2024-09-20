@@ -1,8 +1,8 @@
 import { useRef, useEffect, useCallback, useState } from "react"
 import Canvas from "@/components/Canvas"
 import { useWebSocket } from "@/hooks/websocket"
-import { usePallete } from "@/context/palette"
-import { pallete } from "@/utils/pallete"
+import { usePalette } from "@/context/palette"
+import { palette } from "@/utils/palette"
 import { Position } from "@/utils/math"
 import * as S from "./style"
 import { api } from "@/utils/api"
@@ -14,15 +14,15 @@ export default function Place() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [coords, setCoords] = useState<Position>({ x: 0, y: 0 })
   const [loading, setLoading] = useState(false)
-  const { index } = usePallete()
+  const { index } = usePalette()
 
   const { sendJsonMessage, isConnected, socket } = useWebSocket({
     url: `${import.meta.env.VITE_API_BASE_URL}/api/v1/draw`
   })
 
   const sendTilePlacement = () => {
+    drawTile(coords.x, coords.y, palette[index].hex)
     if (isConnected) {
-      drawTile(coords.x, coords.y, pallete[index].hex)
       sendJsonMessage({ x: coords.x, y: coords.y, color: index })
     }
   }
@@ -39,12 +39,15 @@ export default function Place() {
     (bitmap: Uint8Array) => {
       for (let x = 0; x < CANVAS_WIDTH; x++) {
         for (let y = 0; y < CANVAS_HEIGHT; y++) {
-          const bytesOffset = x + CANVAS_WIDTH * y
-          const upperBits = bytesOffset % 2 === 0
-          const offset = Math.floor(bytesOffset / 2)
-          const offsetVal = bitmap[offset]
-          const color = upperBits ? (offsetVal & 0xf0) >> 4 : offsetVal & 0x0f
-          drawTile(x, y, pallete[color].hex)
+          const offset = (x + CANVAS_WIDTH * y) * 5
+          const index = Math.floor(offset / 8)
+          const bitOffset = offset % 8
+
+          const color =
+            (((bitmap[index] << 8) | bitmap[index + 1]) >> (11 - bitOffset)) &
+            0x1f
+
+          drawTile(x, y, palette[color].hex)
         }
       }
     },
@@ -73,7 +76,7 @@ export default function Place() {
     if (socket) {
       socket.onmessage = (event) => {
         const { x, y, color } = JSON.parse(event.data)
-        drawTile(x, y, pallete[color].hex)
+        drawTile(x, y, palette[color].hex)
       }
     }
   }, [drawTile, socket])

@@ -8,18 +8,18 @@ import (
 var (
 	CANVAS_WIDTH  = 1000
 	CANVAS_HEIGHT = 1000
-	BITS_PER_SIZE = 4
+	BITS_PER_SIZE = 5
 )
 
 var ctx = context.Background()
 
 func (r *Redis) SetTileInBoard(x, y int, color uint8) error {
-	if x < 0 || x >= CANVAS_WIDTH || y < 0 || y >= CANVAS_HEIGHT || color >= 16 {
+	if x < 0 || x >= CANVAS_WIDTH || y < 0 || y >= CANVAS_HEIGHT || color >= 32 {
 		log.Printf("Invalid pixel coordinates or color")
 	}
 
 	offset := (x + CANVAS_WIDTH*y) * BITS_PER_SIZE
-	_, err := r.BitField(ctx, "place:board_bitmap", "SET", "u4", offset, color).Result()
+	_, err := r.BitField(ctx, "place:board_bitmap", "SET", "u5", offset, color).Result()
 	if err != nil {
 		log.Printf("Error while trying to set the tile in board %s", err)
 	}
@@ -47,12 +47,14 @@ func (r *Redis) GetTile(x, y int) (uint8, error) {
 	}
 
 	offset := (x + CANVAS_WIDTH*y) * BITS_PER_SIZE
-	result, err := r.BitField(ctx, "place:board_bitmap", "GET", "u4", offset).Result()
+	result, err := r.BitField(ctx, "place:board_bitmap", "GET", "u5", offset).Result()
 	if err != nil {
 		log.Printf("Error fetching tile color: %v", err)
 	}
 
-	return uint8(result[0]), nil
+	color := uint8(result[0])
+
+	return color, nil
 }
 
 func (r *Redis) initializeBoard() error {
