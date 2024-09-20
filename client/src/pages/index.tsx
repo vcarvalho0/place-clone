@@ -21,8 +21,8 @@ export default function Place() {
   })
 
   const sendTilePlacement = () => {
-    drawTile(coords.x, coords.y, palette[index].hex)
     if (isConnected) {
+      drawTile(coords.x, coords.y, palette[index].hex)
       sendJsonMessage({ x: coords.x, y: coords.y, color: index })
     }
   }
