@@ -30,3 +30,5 @@ npm run dev
 ## Environment Variables
 Rename `.env.sample` to `.env`
 You can change the variables if necessary.
+
+![Example](./.github/assets/example.png)
